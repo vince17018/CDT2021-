@@ -36,8 +36,17 @@ class StartPage(tk.Frame):
       tk.Button(self, text="To the leaderboard",
                 command=lambda: master.switch_frame(leaderboard)).place()
       tk.Button(self, text="Quit",
-                command=lambda: master.switch_frame(Options)).place()
-  def quit
+                command=lambda: self.close_window()).place()
+  def close_window(self):
+    self.master.destroy()
+
+class PageOne(tk.Frame):
+    def __init__(self, master):
+        tk.Frame.__init__(self, master)
+        tk.Label(self, text="This is page one").pack(side="top", fill="x", pady=10)
+        tk.Button(self, text="Return to start page",
+                  command=lambda: master.switch_frame(StartPage)).pack()
+
 
 def main():
   root = tk.Tk()
