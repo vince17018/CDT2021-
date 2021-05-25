@@ -17,6 +17,7 @@ class Tketris(tk.Tk):
     tk.Tk.__init__(self)
     self._frame = None
     self.switch_frame(mainMenu)
+    self.title("Tk.etris")
 
   def switch_frame(self,frame_class):
     new_frame = frame_class(self)
@@ -25,32 +26,42 @@ class Tketris(tk.Tk):
     self._frame = new_frame
     self._frame.pack()
 
-class StartPage(tk.Frame):
+class mainMenu(tk.Frame):
   def __init__(self, master):
       tk.Frame.__init__(self, master)
-      tk.Label(self, text="This is the main menu placeholder").place()
+      tk.Label(self, text="This is the main menu placeholder").pack()
       tk.Button(self, text="To the Game",
-                command=lambda: master.switch_frame(Game)).place()
+                command=lambda: master.switch_frame(Game)).pack()
       tk.Button(self, text="To the options",
-                command=lambda: master.switch_frame(Options)).place()
+                command=lambda: master.switch_frame(Options)).pack()
       tk.Button(self, text="To the leaderboard",
-                command=lambda: master.switch_frame(leaderboard)).place()
+                command=lambda: master.switch_frame(Leaderboard)).pack()
       tk.Button(self, text="Quit",
-                command=lambda: self.close_window()).place()
+                command=lambda: self.close_window()).pack()
   def close_window(self):
     self.master.destroy()
 
-class PageOne(tk.Frame):
+class Game(tk.Frame):
     def __init__(self, master):
         tk.Frame.__init__(self, master)
-        tk.Label(self, text="This is page one").pack(side="top", fill="x", pady=10)
-        tk.Button(self, text="Return to start page",
-                  command=lambda: master.switch_frame(StartPage)).pack()
+        tk.Label(self, text="Game here").pack(side="top", fill="x", pady=10)
+        tk.Button(self, text="Return to main menu",
+                  command=lambda: master.switch_frame(mainMenu)).pack()
 
-
+class Options(tk.Frame):
+    def __init__(self, master):
+        tk.Frame.__init__(self, master)
+        tk.Label(self, text="Options Page").pack(side="top", fill="x", pady=10)
+        tk.Button(self, text="Return to main menu",
+                  command=lambda: master.switch_frame(mainMenu)).pack()
+class Leaderboard(tk.Frame):
+    def __init__(self, master):
+        tk.Frame.__init__(self, master)
+        tk.Label(self, text="Leaderboard Page").pack(side="top", fill="x", pady=10)
+        tk.Button(self, text="Return to main menu",
+                  command=lambda: master.switch_frame(mainMenu)).pack()
 def main():
-  root = tk.Tk()
-  root.title("Tk.etris")
+  root = Tketris()
   root.mainloop()
 
 if __name__ == "__main__":
