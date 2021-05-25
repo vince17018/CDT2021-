@@ -3,6 +3,8 @@ import tkinter as tk
 # Setting up constants
 HEIGHT = 720
 WIDTH = 1280
+BUTTONWIDTH = 60
+BUTTONHEIGHT = 30
 
 # Main App
 class Tketris(tk.Tk):
@@ -58,9 +60,10 @@ class Leaderboard(tk.Frame):
         tk.Label(self, text="Leaderboard Page").pack(side="top", fill="x", pady=10)
         tk.Button(self, text="Return to main menu",
                   command=lambda: master.switch_frame(mainMenu)).pack()
-                  
+
 def main():
   root = Tketris()
+  root.geometry('1280x720')
   root.mainloop()
 
 if __name__ == "__main__":
