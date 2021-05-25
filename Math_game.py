@@ -1,8 +1,6 @@
 # Importing need modules
 import tkinter as tk
 # Setting up constants
-HEIGHT = 720
-WIDTH = 1280
 BUTTONWIDTH = 60
 BUTTONHEIGHT = 30
 
