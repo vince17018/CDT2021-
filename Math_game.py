@@ -1,4 +1,4 @@
-# Importing need modules
+# Importing needed modules
 import tkinter as tk
 # Setting up constants
 BUTTONWIDTH = 60
