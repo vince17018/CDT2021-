@@ -1,9 +1,14 @@
 # Importing needed modules
 import tkinter as tk
+import tkinter.messagebox
 # Setting up constants
 BUTTONWIDTH = 60
 BUTTONHEIGHT = 30
 
+# Quit button function
+def close_program():
+    if tkinter.messagebox.askyesno("Quit","Would you like to quit?"):
+      quit()
 # Main App
 class Tketris(tk.Tk):
   def __init__(self):
@@ -16,6 +21,7 @@ class Tketris(tk.Tk):
     # Defines the switch frame function
   def switch_frame(self,frame_class):
     new_frame = frame_class(self)
+    # Destroys past frame to save resources
     if self._frame is not None:
         self._frame.destroy()
     self._frame = new_frame
@@ -32,10 +38,8 @@ class mainMenu(tk.Frame):
       tk.Button(self, text="To the leaderboard",
                 command=lambda: master.switch_frame(Leaderboard)).pack()
       tk.Button(self, text="Quit",
-                command=lambda: self.close_window()).pack()
-  # Quit button function
-  def close_window(self):
-    self.master.destroy()
+                command=lambda: close_program()).pack()
+
 
 # Tetris main window
 class Game(tk.Frame):
@@ -60,9 +64,10 @@ class Leaderboard(tk.Frame):
                   command=lambda: master.switch_frame(mainMenu)).pack()
 
 def main():
-  root = Tketris()
-  root.geometry('1280x720')
-  root.mainloop()
+  app = Tketris()
+  app.geometry('1280x720')
+  app.protocol("WM_DELETE_WINDOW", close_program)
+  app.mainloop()
 
 if __name__ == "__main__":
     main()
