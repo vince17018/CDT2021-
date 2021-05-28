@@ -39,8 +39,6 @@ class mainMenu(tk.Frame):
                 command=lambda: master.switch_frame(Leaderboard)).pack()
       tk.Button(self, text="Quit",
                 command=lambda: close_program()).pack()
-
-
 # Tetris main window
 class Game(tk.Frame):
     def __init__(self, master):
