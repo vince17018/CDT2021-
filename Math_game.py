@@ -2,6 +2,7 @@
 import tkinter as tk
 import tkinter.messagebox
 # Setting up constants
+FONT = ('Segoe Print',16)
 BUTTONWIDTH = 60
 BUTTONHEIGHT = 30
 
