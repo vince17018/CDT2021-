@@ -1,11 +1,10 @@
 import tkinter as tk
-
 class ExampleApp(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self.label = tk.Label(self, text="", width=10)
         self.label.pack()
-        self.remaining = 0
+        #self.remaining = 0
         self.countdown(10)
         self.button = tk.Button(self, text="Stop",command=lambda:self.cancelcountdown())
         self.resetbutton = tk.Button(self,text="Reset",command=lambda:self.reset())
@@ -43,3 +42,4 @@ class ExampleApp(tk.Tk):
 if __name__ == "__main__":
     app = ExampleApp()
     app.mainloop()
+    
