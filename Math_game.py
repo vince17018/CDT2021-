@@ -4,14 +4,10 @@ import tkinter.messagebox
 import tkinter.ttk as ttk
 import os # for reading image files
 import random # for selecting random question
+import math # for rounding
+import colorsys # for colouring the countdown bar
 # Setting up constants
 TITLEFONT = ('Segoe Print',32,'bold'); FONT = ('Segoe Print',16); BUTTONWIDTH = 0.2; BUTTONHEIGHT = 0.05
-
-import math
-
-def roundup(x):
-    return int(math.ceil(x / 10.0))
-
 # Function for reading out of the csv file whichever name you give
 # Input: The file name, example: readcsv(TestQuestions.csv)
 # Output: a list of all of the items inside the csv
@@ -131,43 +127,77 @@ class Game(tk.Frame):
       self.questions = readcsv('test_sampleQuestions.csv') # Gets a list from the csv file 'test_sampleQuestions.csv'  ##
       # Button (temp) which generates new math questions                                                               ##
       generatemathquestion = tk.Button(self,text='Generate New Problem',command=lambda:self.NewQuestion())             ##
-      generatemathquestion.place(relx=0.6,rely=0.9,anchor='center')                                                                    ##
+      generatemathquestion.place(relx=0.6,rely=0.9,anchor='center')                                                    ##
+      self.tempquestiontimer = 15 # seconds                                                                            ##
       ###################################################################################################################
 
       # Display for the Math Game (Where the questions are displayed)
       self.Display = tk.Label(self, text="Game here",font=TITLEFONT) 
       self.Display.place(relx=0.75, rely=0.3, anchor="center")
       # Countdown Timer
-      s = ttk.Style()
-      s.theme_use('clam')
-      s.configure("red.Horizontal.TProgressbar",foreground='red',background='red')
-      self.countdownTimer = ttk.Progressbar(self,style="red.Horizontal.TProgressbar"
+      self.s = ttk.Style()
+      self.s.theme_use('clam')
+      self.countdownTimer = ttk.Progressbar(self,style="timer.Horizontal.TProgressbar"
                                             ,orient='horizontal',length=500,mod='determinate')
       self.countdownTimer.place(relx=0.75,rely=0.1,anchor='center')
       self.countdownLabel = tk.Label(self,text='',width=20)
       self.countdownLabel.place(relx=0.75,rely=0.05,anchor='center')
-      self.countdown(100)
-
+      self.countdownTimer['maximum'] = self.tempquestiontimer
+      self.countdown(self.tempquestiontimer) # Starts Countdown 
+      
+    # Countdown for mathgame
     def countdown(self, remaining = None):
-        if remaining is not None:
-          self.remaining = remaining
-        if self.remaining <= 0:
-          self.countdownTimer['value']=0
-          self.countdownLabel.configure(text='Times Up')
-        else:
-          if self.remaining > 35:
-            s = ttk.Style()
-            s.theme_use('clam')
-            s.configure("green.Horizontal.TProgressbar",foreground='#001000',background='#001000')
-            self.countdownTimer.configure(style="green.Horizontal.TProgressbar")
-          else:
-            self.countdownTimer.configure(style="red.Horizontal.TProgressbar")
+      if remaining is not None:
+        self.remaining = remaining
+      if self.remaining <= 0:
+        self.countdownTimer['value']=self.tempquestiontimer
+        self.countdownLabel.configure(text='Times Up')
+        self.BarColour = 'green'
+        self.flashingBar() # flash bar green and red after time is up
+      else:
+        # colour = (math.floor(255-(self.remaining/100*255)),math.floor(self.remaining/100*255),0)
+        colour = colorsys.hsv_to_rgb(self.remaining/(self.tempquestiontimer*4),1.0,1.0) # green to red gradient
+        self.s.configure("timer.Horizontal.TProgressbar",background=self.htmlcolor(colour[0],colour[1],colour[2])) 
 
-          self.countdownLabel.configure(text="Remaining Time: %g" % roundup(self.remaining))
-          self.countdownTimer['value']=self.remaining
-          self.remaining = self.remaining - 0.01
-          self.countingdown = self.after(1, self.countdown)
+        # Changes the progress bar ad the label to display the remaining time
+        self.countdownTimer.configure(style="timer.Horizontal.TProgressbar")
+        self.countdownLabel.configure(text="Remaining Time: %g" % math.ceil(self.remaining))
+        self.countdownTimer['value']=self.remaining
+        self.remaining = self.remaining - 0.01 # decrement the time
+        self.countingdown = self.after(10, self.countdown) # repeats the function after 10 milliseconds (0.01 seconds)
+
+    # Changes the colour of the bar every 1 second after time is up. 
+    def flashingBar(self):
+      if self.BarColour == 'green':
+        self.BarColour = 'red'
+      elif self.BarColour == 'red':
+        self.BarColour = 'green'
+      self.s.configure("timer.Horizontal.TProgressbar",background=self.BarColour)
+      self.after(1000,self.flashingBar)
+
+    def htmlcolor(self,r, g, b):
+      def _chkarg(a):
+          if isinstance(a, int): # clamp to range 0--255
+              if a < 0:
+                  a = 0
+              elif a > 255:
+                  a = 255
+          elif isinstance(a, float): # clamp to range 0.0--1.0 and convert to integer 0--255
+              if a < 0.0:
+                  a = 0
+              elif a > 1.0:
+                  a = 255
+              else:
+                  a = int(round(a*255))
+          else:
+              raise ValueError('Arguments must be integers or floats.')
+          return a
+      r = _chkarg(r)
+      g = _chkarg(g)
+      b = _chkarg(b)
+      return '#{:02x}{:02x}{:02x}'.format(r,g,b)
   
+
     def TetrisGame(self):
       pass
       
@@ -175,7 +205,7 @@ class Game(tk.Frame):
 class Options(tk.Frame):
     def __init__(self, master):
         tk.Frame.__init__(self, master)
-        tk.Label(self, text="Options Page",font=TITLEFONT).place(relx=0.5, rely=0.3, anchor="center")
+        self.OptionLabel = tk.Label(self, text="Options Page",font=TITLEFONT).place(relx=0.5, rely=0.3, anchor="center")
         tk.Button(self, text="Return to main menu",
                   command=lambda: master.switch_frame(mainMenu),font=FONT).place(relx=0.5, rely=0.5, anchor="center"
                   ,relheight=BUTTONHEIGHT, relwidth=BUTTONWIDTH)
