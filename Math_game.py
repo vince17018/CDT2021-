@@ -7,7 +7,9 @@ import random # for selecting random question
 import math # for rounding
 import colorsys # for colouring the countdown bar
 # Setting up constants
-TITLEFONT = ('Segoe Print',32,'bold'); FONT = ('Segoe Print',16); BUTTONWIDTH = 0.2; BUTTONHEIGHT = 0.05
+TITLEFONT = ('Segoe Print',32,'bold'); FONT = ('Segoe Print',16)
+BUTTONWIDTH = 0.5
+BUTTONHEIGHT = 0.5
 # Function for reading out of the csv file whichever name you give
 # Input: The file name, example: readcsv(TestQuestions.csv)
 # Output: a list of all of the items inside the csv
@@ -23,6 +25,7 @@ def readcsv(csvname):
   for i in range(1,num_lines): # for every line after that format and append to list
     line = f.readline()
     line = line.rstrip()
+    line = line.replace('"','')
     questions = line.split(",")
     # append detials to list #
     temp_list.append(questions)
@@ -69,7 +72,7 @@ class mainMenu(tk.Frame):
       ############################
 
       # Tketris Title Label
-      title = get_image('tketris_title.png')
+      title = get_image('Tketris_title.png')
       title_label = tk.Label(self,image=title,borderwidth=0)
       title_label.place(relx=0.5,rely=0.2,anchor='center')
       title_label.img = title
@@ -110,13 +113,32 @@ class Game(tk.Frame):
       , image=back,borderwidth=0)
       back_button.place(relx = 0.9,rely=0.9,anchor='center')
       back_button.img = back
+
     # Randomly Selects a Math Question from the questions list appended from the csv
     def NewQuestion(self):
-      if len(self.questions) > 1: # If there is still item inside list
+      if len(self.questions) > 0: # If there is still item inside list
         randomquestion = random.choice(self.questions) # Select random question
+        print("random something:",randomquestion)
         self.Display.config(text=randomquestion[0]) # Display it on the window
-        self.questions.remove(randomquestion) # Remove it from list to prevent it from displaying again
-        print(len(self.questions))
+        ORIGINALrandomquestion = randomquestion
+
+        # Answer Buttons
+        
+        self.Buttons[0].config(text=randomquestion[1])
+        randomquestion.remove(randomquestion[1])
+        randomquestion.remove(randomquestion[0])
+        ButtonPos = random.sample([[1,1],[1,2],[2,1],[2,2]],4)
+        print(ButtonPos)
+        for i in range(0,4):
+          if i > 0:
+            randomAnswer = random.choice(randomquestion)
+            randomquestion.remove(randomAnswer)
+            self.Buttons[i].config(text=randomAnswer)
+
+          self.Buttons[i].place(relx=0.1*int(ButtonPos[i][0]),rely=0.1*int(ButtonPos[i][1]),anchor='center')
+          
+        self.questions.remove(ORIGINALrandomquestion) # Remove it from list to prevent it from displaying again
+          
       else:
         ## temporary, show no more buttons ###################################
         tk.Label(self,text="No more questions").place(relx=0.5,rely=0.5)
@@ -130,6 +152,12 @@ class Game(tk.Frame):
       generatemathquestion.place(relx=0.6,rely=0.9,anchor='center')                                                    ##
       self.tempquestiontimer = 15 # seconds                                                                            ##
       ###################################################################################################################
+
+      # Initialize Buttons
+      self.Buttons = {}
+      self.Buttons[0] = tk.Button(self,width=BUTTONWIDTH,height=BUTTONHEIGHT)
+      for i in range(1,4):
+        self.Buttons[i] = tk.Button(self,width=BUTTONWIDTH,height=BUTTONHEIGHT)
 
       # Display for the Math Game (Where the questions are displayed)
       self.Display = tk.Label(self, text="Game here",font=TITLEFONT) 
@@ -207,8 +235,19 @@ class Options(tk.Frame):
         tk.Frame.__init__(self, master)
         self.OptionLabel = tk.Label(self, text="Options Page",font=TITLEFONT).place(relx=0.5, rely=0.3, anchor="center")
         tk.Button(self, text="Return to main menu",
-                  command=lambda: master.switch_frame(mainMenu),font=FONT).place(relx=0.5, rely=0.5, anchor="center"
+                  command=lambda:Options.updateSettings(self,master),font=FONT).place(relx=0.5, rely=0.5, anchor="center"
                   ,relheight=BUTTONHEIGHT, relwidth=BUTTONWIDTH)
+        self.difficulty = tk.StringVar(self)
+        self.difficulty.set("Normal") # Defualt Value
+        difficultyMenu = tk.OptionMenu(self,self.difficulty,"Easy","Normal","Hard")
+        difficultyMenu.config(width=50)
+        difficultyMenu.place(relx=0.25,rely=0.8,anchor="center")
+    def updateSettings(self,master):
+      master.switch_frame(mainMenu)
+      currentDifficulty = self.difficulty.get()
+      print(currentDifficulty)
+
+
 # Leaderboard Frame
 class Leaderboard(tk.Frame):
     def __init__(self, master):
