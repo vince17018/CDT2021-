@@ -8,8 +8,8 @@ import math # for rounding
 import colorsys # for colouring the countdown bar
 # Setting up constants
 TITLEFONT = ('Segoe Print',32,'bold'); FONT = ('Segoe Print',16)
-BUTTONWIDTH = 0.5
-BUTTONHEIGHT = 0.5
+BUTTONWIDTH = 0.15
+BUTTONHEIGHT = 0.15
 # Function for reading out of the csv file whichever name you give
 # Input: The file name, example: readcsv(TestQuestions.csv)
 # Output: a list of all of the items inside the csv
@@ -135,7 +135,7 @@ class Game(tk.Frame):
             randomquestion.remove(randomAnswer)
             self.Buttons[i].config(text=randomAnswer)
 
-          self.Buttons[i].place(relx=0.1*int(ButtonPos[i][0]),rely=0.1*int(ButtonPos[i][1]),anchor='center')
+          self.Buttons[i].place(relx=0.5+(0.15*int(ButtonPos[i][0])),rely=0.35+0.15*int(ButtonPos[i][1]),anchor='center',relheight=BUTTONHEIGHT,relwidth=BUTTONWIDTH)
           
         self.questions.remove(ORIGINALrandomquestion) # Remove it from list to prevent it from displaying again
           
@@ -155,12 +155,12 @@ class Game(tk.Frame):
 
       # Initialize Buttons
       self.Buttons = {}
-      self.Buttons[0] = tk.Button(self,width=BUTTONWIDTH,height=BUTTONHEIGHT)
+      self.Buttons[0] = tk.Button(self)
       for i in range(1,4):
-        self.Buttons[i] = tk.Button(self,width=BUTTONWIDTH,height=BUTTONHEIGHT)
+        self.Buttons[i] = tk.Button(self)
 
       # Display for the Math Game (Where the questions are displayed)
-      self.Display = tk.Label(self, text="Game here",font=TITLEFONT) 
+      self.Display = tk.Label(self, text="Game here",font=TITLEFONT)
       self.Display.place(relx=0.75, rely=0.3, anchor="center")
       # Countdown Timer
       self.s = ttk.Style()
