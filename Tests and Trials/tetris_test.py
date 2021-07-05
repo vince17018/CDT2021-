@@ -55,6 +55,7 @@ class Figure:
 
 root = tk.Tk()
 canvas = tk.Canvas(root,height=500,width=250,bg='grey')
+test = canvas.create_rectangle(10,10,20,20,fill='green',tags='block')
 canvas.pack()
 root.mainloop()
 TetrisGame()
