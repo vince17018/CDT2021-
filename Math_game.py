@@ -7,9 +7,8 @@ import random # for selecting random question
 import math # for rounding
 import colorsys # for colouring the countdown bar
 # Setting up constants
-TITLEFONT = ('Segoe Print',32,'bold'); FONT = ('Segoe Print',16)
-BUTTONWIDTH = 0.15
-BUTTONHEIGHT = 0.15
+TITLEFONT = ('Segoe Print',32,'bold'); ANSFONT = ('Segoe Print',24,'bold'); FONT  = ('Segoe Print',16)
+BUTTONWIDTH = 0.15;BUTTONHEIGHT = 0.15
 # Function for reading out of the csv file whichever name you give
 # Input: The file name, example: readcsv(TestQuestions.csv)
 # Output: a list of all of the items inside the csv
@@ -116,48 +115,64 @@ class Game(tk.Frame):
 
     # Randomly Selects a Math Question from the questions list appended from the csv
     def NewQuestion(self):
-      if len(self.questions) > 0: # If there is still item inside list
-        randomquestion = random.choice(self.questions) # Select random question
-        print("random something:",randomquestion)
-        self.Display.config(text=randomquestion[0]) # Display it on the window
-        ORIGINALrandomquestion = randomquestion
+      if not self.penalty:
+        if len(self.questions) > 0: # If there is still item inside list
+          randomquestion = random.choice(self.questions) # Select random question
+          print("random something:",randomquestion)
+          self.Display.config(text=randomquestion[0]) # Display it on the window
+          ORIGINALrandomquestion = randomquestion
+          self.countdown(self.tempquestiontimer)
 
-        # Answer Buttons
-        
-        self.Buttons[0].config(text=randomquestion[1])
-        randomquestion.remove(randomquestion[1])
-        randomquestion.remove(randomquestion[0])
-        ButtonPos = random.sample([[1,1],[1,2],[2,1],[2,2]],4)
-        print(ButtonPos)
-        for i in range(0,4):
-          if i > 0:
-            randomAnswer = random.choice(randomquestion)
-            randomquestion.remove(randomAnswer)
-            self.Buttons[i].config(text=randomAnswer)
+          # Answer Buttons
+          
+          self.Buttons[0].config(text=randomquestion[1],command=lambda:self.CorrectAns())
+          randomquestion.remove(randomquestion[1])
+          randomquestion.remove(randomquestion[0])
+          ButtonInfo = random.sample([[1,1,'#93c47d'],[1,2,'#e06666'],[2,1,'#6fa8dc'],[2,2,'#f1c232']],4)
+          print(ButtonInfo)
+          for i in range(0,4):
+            if i > 0:
+              randomAnswer = random.choice(randomquestion)
+              randomquestion.remove(randomAnswer)
+              self.Buttons[i].config(text=randomAnswer,command=lambda:self.WrongAns())
+            self.Buttons[i].config(bg=ButtonInfo[i][2],font=ANSFONT)
+            self.Buttons[i].place(relx=0.525+(0.15*int(ButtonInfo[i][0])),rely=0.35+0.15*int(ButtonInfo[i][1]),anchor='center',relheight=BUTTONHEIGHT,relwidth=BUTTONWIDTH)
+            
+          self.questions.remove(ORIGINALrandomquestion) # Remove it from list to prevent it from displaying again
+          
+        else:
+          ## temporary, show no more buttons ###################################
+          tk.Label(self,text="No more questions").place(relx=0.5,rely=0.5)
+          print("No more questions")
 
-          self.Buttons[i].place(relx=0.5+(0.15*int(ButtonPos[i][0])),rely=0.35+0.15*int(ButtonPos[i][1]),anchor='center',relheight=BUTTONHEIGHT,relwidth=BUTTONWIDTH)
-          
-        self.questions.remove(ORIGINALrandomquestion) # Remove it from list to prevent it from displaying again
-          
-      else:
-        ## temporary, show no more buttons ###################################
-        tk.Label(self,text="No more questions").place(relx=0.5,rely=0.5)
-        print("No more questions")
+    def CorrectAns(self):
+      self.after_cancel(self.tick)
+      self.NewQuestion()
+    def WrongAns(self):
+      def callback():
+        if not self.gameOver:
+          for i in range(0,4):
+            self.Buttons[i]["state"] = "normal"
+      for i in range(0,4):
+        self.Buttons[i]["state"] = "disabled"
+        self.wronganswer = self.after(self.tempquestiontimer*333,callback)
     
     def MathGame(self):
       #### Temporary ####################################################################################################
-      self.questions = readcsv('test_sampleQuestions.csv') # Gets a list from the csv file 'test_sampleQuestions.csv'  ##
+      self.questions = readcsv('sampleQuestion.csv') # Gets a list from the csv file 'test_sampleQuestions.csv'  ##
       # Button (temp) which generates new math questions                                                               ##
       generatemathquestion = tk.Button(self,text='Generate New Problem',command=lambda:self.NewQuestion())             ##
       generatemathquestion.place(relx=0.6,rely=0.9,anchor='center')                                                    ##
-      self.tempquestiontimer = 15 # seconds                                                                            ##
+      self.tempquestiontimer = 5 # seconds                                                                            ##
       ###################################################################################################################
+      self.penalty = False
+      self.gameOver = False
 
       # Initialize Buttons
       self.Buttons = {}
       self.Buttons[0] = tk.Button(self)
       for i in range(1,4):
-        self.Buttons[i] = tk.Button(self)
+        self.Buttons[i] = tk.Button(self,)
 
       # Display for the Math Game (Where the questions are displayed)
       self.Display = tk.Label(self, text="Game here",font=TITLEFONT)
@@ -171,7 +186,6 @@ class Game(tk.Frame):
       self.countdownLabel = tk.Label(self,text='',width=20)
       self.countdownLabel.place(relx=0.75,rely=0.05,anchor='center')
       self.countdownTimer['maximum'] = self.tempquestiontimer
-      self.countdown(self.tempquestiontimer) # Starts Countdown 
       
     # Countdown for mathgame
     def countdown(self, remaining = None):
@@ -181,6 +195,7 @@ class Game(tk.Frame):
         self.countdownTimer['value']=self.tempquestiontimer
         self.countdownLabel.configure(text='Times Up')
         self.BarColour = 'green'
+        self.gameOver = True
         self.flashingBar() # flash bar green and red after time is up
       else:
         # colour = (math.floor(255-(self.remaining/100*255)),math.floor(self.remaining/100*255),0)
@@ -188,11 +203,11 @@ class Game(tk.Frame):
         self.s.configure("timer.Horizontal.TProgressbar",background=self.htmlcolor(colour[0],colour[1],colour[2])) 
 
         # Changes the progress bar ad the label to display the remaining time
-        self.countdownTimer.configure(style="timer.Horizontal.TProgressbar")
+        self.countdownTimer.configure(style ="timer.Horizontal.TProgressbar")
         self.countdownLabel.configure(text="Remaining Time: %g" % math.ceil(self.remaining))
         self.countdownTimer['value']=self.remaining
         self.remaining = self.remaining - 0.01 # decrement the time
-        self.countingdown = self.after(10, self.countdown) # repeats the function after 10 milliseconds (0.01 seconds)
+        self.tick = self.after(10, self.countdown) # repeats the function after 10 milliseconds (0.01 seconds)
 
     # Changes the colour of the bar every 1 second after time is up. 
     def flashingBar(self):
@@ -201,6 +216,9 @@ class Game(tk.Frame):
       elif self.BarColour == 'red':
         self.BarColour = 'green'
       self.s.configure("timer.Horizontal.TProgressbar",background=self.BarColour)
+      for i in range(0,4):
+        self.Buttons[i]["state"] = "disabled"
+      self.after_cancel(self.tick)
       self.after(1000,self.flashingBar)
 
     def htmlcolor(self,r, g, b):
@@ -228,7 +246,46 @@ class Game(tk.Frame):
 
     def TetrisGame(self):
       pass
-      
+
+# Tetris Block Codes
+class Figure:
+  ## Tutorial from https://levelup.gitconnected.com/writing-tetris-in-python-2a16bddb5318
+
+  # RGB colours defined here
+  colours = [
+  (0, 0, 0),
+  (120, 37, 179),
+  (100, 179, 179),
+  (80, 34, 22),
+  (80, 134, 22),
+  (180, 34, 22),
+  (180, 34, 122),
+  ]
+  # 0  1  2  3
+  # 4  5  6  7
+  # 8  9  10 11
+  # 12 13 14 15
+  figures = [
+      [[1, 5, 9, 13], [4, 5, 6, 7]], # line block (2 rotation)
+      [[1, 2, 5, 9], [0, 4, 5, 6], [1, 5, 9, 8], [4, 5, 6, 10]], # J block (4 rotations)
+      [[1, 2, 6, 10], [5, 6, 7, 9], [2, 6, 10, 11], [3, 5, 6, 7]], # L block (4 rotations)
+      [[1, 4, 5, 6], [1, 4, 5, 9], [4, 5, 6, 9], [1, 5, 6, 9]], # T block (4 rotations)
+      [[1, 2, 5, 6]], # Square O block (1 rotation)
+      [[8,9,5,6],[1,5,6,10],[8,9,5,6],[0,4,5,9]], # S block (4 rotations)
+      [[4,5,9,10],[2,6,5,9],[4,5,9,10],[8,4,5,1]] # Z block (4 rotations)
+  ]
+
+  def __init__(self,x,y):
+    self.x = x
+    self.y = y
+    self.type = random.randint(0,len(self.figures) - 1)
+    self.colour = random.randint(1,len(self.colours)-1)
+    self.rotation = 0
+  def image(self):
+    return self.figures[self.type][self.rotation]
+  def rotate(self):
+    self.rotation = (self.rotation + 1) % len(self.figures[self.types])
+    
 # Option Menu
 class Options(tk.Frame):
     def __init__(self, master):

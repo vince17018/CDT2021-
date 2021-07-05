@@ -1,0 +1,22 @@
+import tkinter as tk
+F1 = tk.Frame( )
+s = tk.Scrollbar(F1)
+L = tk.Listbox(F1)
+s.pack(side=tk.RIGHT, fill=tk.Y)
+L.pack(side=tk.LEFT, fill=tk.Y)
+s['command'] = L.yview
+L['yscrollcommand'] = s.set
+for i in range(30): L.insert(tk.END, str(i))
+F1.pack(side=tk.TOP)
+
+F2 = tk.Frame( )
+lab = tk.Label(F2)
+def poll( ):
+    lab.after(200, poll)
+    sel = L.curselection( )
+    lab.config(text=str(sel))
+lab.pack( )
+F2.pack(side=tk.TOP)
+
+poll( )
+tk.mainloop( )
