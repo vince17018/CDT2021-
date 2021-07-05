@@ -245,11 +245,23 @@ class Game(tk.Frame):
   
 
     def TetrisGame(self):
-      pass
-
+      # Game Variables
+      score = 0
+      field = []
+      height = 40
+      width = 10
+      figure = None
+      for i in range(height):
+        new_line = []
+        for j in range(width):
+          new_line.append(0)
+        field.append(new_line)
+        Figure(3,0)
+        
 # Tetris Block Codes
 class Figure:
   ## Tutorial from https://levelup.gitconnected.com/writing-tetris-in-python-2a16bddb5318
+  ## Only the first bit, the second half of the guide does not help me as I am not using pygame
 
   # RGB colours defined here
   colours = [
