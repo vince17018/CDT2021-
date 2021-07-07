@@ -5,7 +5,7 @@ def TetrisGame():
     # Game Variables
     score = 0
     field = []
-    height = 40
+    height = 20
     width = 10
     figure = None
     for i in range(height):
@@ -13,7 +13,12 @@ def TetrisGame():
         for j in range(width):
             new_line.append(0)
         field.append(new_line)
+    figure = Figure()
+    block = figure.image()
+    print(block)
+
 def MoveBlockDown():
+  global moving
   moving = None
   canvas.move(activeblock,0,25)
   coordinates = canvas.coords(activeblock)
@@ -23,16 +28,18 @@ def MoveBlockDown():
 def MovingBlock(event):
   x, y =0, 0
   coordinates = canvas.coords(activeblock)
-  if event.char == "a":
-    if coordinates[0] > 0:
-      x = -10
-  elif event.char == "d":
-    if coordinates[2]<250:
-      x = 10
-  elif event.char == " ":
-    y = 500-coordinates[3]
-  print(coordinates)
-  canvas.move(activeblock,x,y)
+  if coordinates[3]<500:
+    if event.char == "a":
+      if coordinates[0] > 0:
+        x = -25
+    elif event.char == "d":
+      if coordinates[2]<250:
+        x = 25
+    elif event.char == " ":
+      y = 500-coordinates[3]
+      root.after_cancel(moving)
+    
+    canvas.move(activeblock,x,y)
 # Tetris Block Codes
 class Figure:
   ## Tutorial from https://levelup.gitconnected.com/writing-tetris-in-python-2a16bddb5318
@@ -62,7 +69,7 @@ class Figure:
       [[4,5,9,10],[2,6,5,9],[4,5,9,10],[8,4,5,1]] # Z block (4 rotations)
   ]
 
-  def __init__(self,x,y):
+  def __init__(self,x=0,y=0):
     self.x = x
     self.y = y
     self.type = random.randint(0,len(self.figures) - 1)
@@ -76,10 +83,10 @@ class Figure:
 root = tk.Tk()
 root.bind("<Key>",MovingBlock)
 canvas = tk.Canvas(root,height=500,width=250,bg='grey')
-activeblock = canvas.create_rectangle(125,2,125+25,2+25,fill='green',tags='activeblock')
-
+activeblock = canvas.create_rectangle(125,0,125+25,0+25,fill='green',tags='activeblock')
+root.after(1000,lambda:MoveBlockDown())
 canvas.pack()
 TetrisGame()
-MoveBlockDown()
+
 
 root.mainloop()
