@@ -53,6 +53,9 @@ class Tketris(tk.Tk):
     self._frame = None
     self.switch_frame(mainMenu) # Set starting frame
     self.title("Tk.etris")
+    dir = os.path.dirname(__file__) # Gets the path of where the program is
+    filename = os.path.join(dir, 'Images',"TkIcon.ico") # Gets the path of where the images are stored.
+    self.iconbitmap(filename)
 
     # Defines the switch frame function
   def switch_frame(self,frame_class):

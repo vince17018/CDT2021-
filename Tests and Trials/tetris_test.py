@@ -1,45 +1,73 @@
 import tkinter as tk
 import random
-
-def TetrisGame():
+import math
+class Tketris():
+  def __init__(self):
+    app.bind("<Key>",self.MovingBlock)
+    self.canvas = tk.Canvas(app,height=500,width=250,bg='grey')
+    app.after(1000,lambda:self.Falling())
+    self.canvas.pack()
+    self.TetrisGame()
+  def TetrisGame(self):
     # Game Variables
-    score = 0
-    field = []
+    self.score = 0
+    self.field = []
     height = 20
     width = 10
     figure = None
+    self.activeblock = {}
+    for i in range(1,4):
+      self.activeblock[i] = None
+
     for i in range(height):
         new_line = []
         for j in range(width):
             new_line.append(0)
-        field.append(new_line)
+        self.field.append(new_line)
     figure = Figure()
-    block = figure.image()
-    print(block)
+    self.block = figure.image()
+    print(self.block)
+    blockClear = 0
+    for i in list(self.block):
+      row = math.floor(i/4)
+      colomn = i%4
+      if self.field[row][colomn+3] == 0:
+        blockClear += 1
+    if blockClear == 4:
+      for i in list(self.block):
+        row = math.floor(i/4)
+        colomn = i%4
+        
+        
+  def Falling(self):
+    global moving
+    moving = None
+    for i in range(0,4):
+      self.canvas.move(self.activeblock[i],0,25)
+      coordinates = self.canvas.coords(self.activeblock[3])
+    if coordinates[3]<500:
+      moving = app.after(1000,lambda:self.Falling())
 
-def MoveBlockDown():
-  global moving
-  moving = None
-  canvas.move(activeblock,0,25)
-  coordinates = canvas.coords(activeblock)
-  if coordinates[3]<500:
-    moving = root.after(1000,lambda:MoveBlockDown())
-
-def MovingBlock(event):
-  x, y =0, 0
-  coordinates = canvas.coords(activeblock)
-  if coordinates[3]<500:
-    if event.char == "a":
-      if coordinates[0] > 0:
-        x = -25
-    elif event.char == "d":
-      if coordinates[2]<250:
-        x = 25
-    elif event.char == " ":
-      y = 500-coordinates[3]
-      root.after_cancel(moving)
-    
-    canvas.move(activeblock,x,y)
+  def MovingBlock(self,event):
+    x, y =0, 0
+    # find furthest down
+    downcoord = self.canvas.coords(self.activeblock[3])
+    # find furthest right
+    rightcoord = self.activeblock.index(max([x%4 for x in self.activeblock]))
+    # find furthest left
+    leftcoord = self.activeblock.index(min([x%4 for x in self.activeblock]))
+    if downcoord[3]<500:
+      if event.char == "a":
+        if leftcoord[0] > 0:
+          x = -25
+      elif event.char == "d":
+        if rightcoord[2]<250:
+          x = 25
+      elif event.char == " ":
+        y = 500-downcoord[3]
+        app.after_cancel(moving)
+      for i in range(0,4):
+        self.canvas.move(self.activeblock[i],x,y)
 # Tetris Block Codes
 class Figure:
   ## Tutorial from https://levelup.gitconnected.com/writing-tetris-in-python-2a16bddb5318
@@ -65,8 +93,8 @@ class Figure:
       [[1, 2, 6, 10], [5, 6, 7, 9], [2, 6, 10, 11], [3, 5, 6, 7]], # L block (4 rotations)
       [[1, 4, 5, 6], [1, 4, 5, 9], [4, 5, 6, 9], [1, 5, 6, 9]], # T block (4 rotations)
       [[1, 2, 5, 6]], # Square O block (1 rotation)
-      [[8,9,5,6],[1,5,6,10],[8,9,5,6],[0,4,5,9]], # S block (4 rotations)
-      [[4,5,9,10],[2,6,5,9],[4,5,9,10],[8,4,5,1]] # Z block (4 rotations)
+      [[5,6,8,9],[1,5,6,10],[5,6,8,9],[0,4,5,9]], # S block (4 rotations)
+      [[4,5,9,10],[2,5,6,9],[4,5,9,10],[1,4,5,8]] # Z block (4 rotations)
   ]
 
   def __init__(self,x=0,y=0):
@@ -80,13 +108,10 @@ class Figure:
   def rotate(self):
     self.rotation = (self.rotation + 1) % len(self.figures[self.types])
 
-root = tk.Tk()
-root.bind("<Key>",MovingBlock)
-canvas = tk.Canvas(root,height=500,width=250,bg='grey')
-activeblock = canvas.create_rectangle(125,0,125+25,0+25,fill='green',tags='activeblock')
-root.after(1000,lambda:MoveBlockDown())
-canvas.pack()
-TetrisGame()
+
+app = tk.Tk()
+Tketris()
+app.mainloop()
+  
 
 
-root.mainloop()
