@@ -6,9 +6,11 @@ import os # for reading image files
 import random # for selecting random question
 import math # for rounding
 import colorsys # for colouring the countdown bar
+from threading import Lock
 # Setting up constants
 TITLEFONT = ('Segoe Print',32,'bold'); ANSFONT = ('Segoe Print',24,'bold'); FONT  = ('Segoe Print',16)
 BUTTONWIDTH = 0.15;BUTTONHEIGHT = 0.15
+COLOURS = ['gray', 'lightgreen','pink','blue','orange','purple']
 # Function for reading out of the csv file whichever name you give
 # Input: The file name, example: readcsv(TestQuestions.csv)
 # Output: a list of all of the items inside the csv
@@ -107,32 +109,33 @@ class mainMenu(tk.Frame):
 class Game(tk.Frame):
     def __init__(self, master):
       tk.Frame.__init__(self, master)
-      self.MathGame()
-      self.TetrisGame()
       # Back Button to get back to the MainMenu
       back = get_image('back_button.png')
       back_button = tk.Button(self,command=lambda: master.switch_frame(mainMenu)
       , image=back,borderwidth=0)
-      back_button.place(relx = 0.9,rely=0.9,anchor='center')
+      back_button.place(relx = (5/6),rely=0.9,anchor='center')
       back_button.img = back
+      self.score = 0
+      self.MathGame()
+      self.Tetris_Game()
+      self.GameOverRun = False
+
 
     # Randomly Selects a Math Question from the questions list appended from the csv
     def NewQuestion(self):
       if not self.penalty:
         if len(self.questions) > 0: # If there is still item inside list
           randomquestion = random.choice(self.questions) # Select random question
-          print("random something:",randomquestion)
           self.Display.config(text=randomquestion[0]) # Display it on the window
           ORIGINALrandomquestion = randomquestion
           self.countdown(self.tempquestiontimer)
 
           # Answer Buttons
-          
+          print(randomquestion[1])
           self.Buttons[0].config(text=randomquestion[1],command=lambda:self.CorrectAns())
           randomquestion.remove(randomquestion[1])
           randomquestion.remove(randomquestion[0])
           ButtonInfo = random.sample([[1,1,'#93c47d'],[1,2,'#e06666'],[2,1,'#6fa8dc'],[2,2,'#f1c232']],4)
-          print(ButtonInfo)
           for i in range(0,4):
             if i > 0:
               randomAnswer = random.choice(randomquestion)
@@ -144,38 +147,39 @@ class Game(tk.Frame):
           self.questions.remove(ORIGINALrandomquestion) # Remove it from list to prevent it from displaying again
           
         else:
-          ## temporary, show no more buttons ###################################
-          tk.Label(self,text="No more questions").place(relx=0.5,rely=0.5)
-          print("No more questions")
+          # TEMP MAKE IT READ FROM THE TOPIC THAT PLAYER CHOSE
+          self.questions = readcsv('sampleQuestion.csv')
+          print('looping')
+          self.NewQuestion()
 
     def CorrectAns(self):
       self.after_cancel(self.tick)
+      self.score += 1
+      
       self.NewQuestion()
     def WrongAns(self):
       def callback():
-        if not self.gameOver:
+        if not self.tetris.game_over:
           for i in range(0,4):
             self.Buttons[i]["state"] = "normal"
       for i in range(0,4):
         self.Buttons[i]["state"] = "disabled"
-        self.wronganswer = self.after(self.tempquestiontimer*333,callback)
+        self.wronganswer = self.after(self.tempquestiontimer*250,callback)
     
     def MathGame(self):
       #### Temporary ####################################################################################################
-      self.questions = readcsv('sampleQuestion.csv') # Gets a list from the csv file 'test_sampleQuestions.csv'  ##
+      self.questions = readcsv('sampleQuestion.csv') # Gets a list from the csv file 'test_sampleQuestions.csv'        ##
       # Button (temp) which generates new math questions                                                               ##
-      generatemathquestion = tk.Button(self,text='Generate New Problem',command=lambda:self.NewQuestion())             ##
-      generatemathquestion.place(relx=0.6,rely=0.9,anchor='center')                                                    ##
-      self.tempquestiontimer = 5 # seconds                                                                            ##
+      self.tempquestiontimer = 10 # seconds                                                                            ##
       ###################################################################################################################
       self.penalty = False
-      self.gameOver = False
-
+      self.score_label = tk.Label(self,font=FONT)
+      self.score_label.place(anchor='center',relx = 7/12,rely=0.9)
       # Initialize Buttons
       self.Buttons = {}
       self.Buttons[0] = tk.Button(self)
       for i in range(1,4):
-        self.Buttons[i] = tk.Button(self,)
+        self.Buttons[i] = tk.Button(self)
 
       # Display for the Math Game (Where the questions are displayed)
       self.Display = tk.Label(self, text="Game here",font=TITLEFONT)
@@ -189,7 +193,7 @@ class Game(tk.Frame):
       self.countdownLabel = tk.Label(self,text='',width=20)
       self.countdownLabel.place(relx=0.75,rely=0.05,anchor='center')
       self.countdownTimer['maximum'] = self.tempquestiontimer
-      
+      self.NewQuestion()
     # Countdown for mathgame
     def countdown(self, remaining = None):
       if remaining is not None:
@@ -197,8 +201,8 @@ class Game(tk.Frame):
       if self.remaining <= 0:
         self.countdownTimer['value']=self.tempquestiontimer
         self.countdownLabel.configure(text='Times Up')
-        self.BarColour = 'green'
-        self.gameOver = True
+        self.tetris.game_over = True
+        
         self.flashingBar() # flash bar green and red after time is up
       else:
         # colour = (math.floor(255-(self.remaining/100*255)),math.floor(self.remaining/100*255),0)
@@ -212,8 +216,12 @@ class Game(tk.Frame):
         self.remaining = self.remaining - 0.01 # decrement the time
         self.tick = self.after(10, self.countdown) # repeats the function after 10 milliseconds (0.01 seconds)
 
-    # Changes the colour of the bar every 1 second after time is up. 
+    # Changes the colour of the bar every 1 second after time is up.
     def flashingBar(self):
+      try:
+        self.BarColour
+      except:
+        self.BarColour = 'red'
       if self.BarColour == 'green':
         self.BarColour = 'red'
       elif self.BarColour == 'red':
@@ -223,6 +231,8 @@ class Game(tk.Frame):
         self.Buttons[i]["state"] = "disabled"
       self.after_cancel(self.tick)
       self.after(1000,self.flashingBar)
+      
+
 
     def htmlcolor(self,r, g, b):
       def _chkarg(a):
@@ -245,62 +255,132 @@ class Game(tk.Frame):
       g = _chkarg(g)
       b = _chkarg(b)
       return '#{:02x}{:02x}{:02x}'.format(r,g,b)
-  
 
-    def TetrisGame(self):
-      # Game Variables
-      score = 0
-      field = []
-      height = 40
-      width = 10
-      figure = None
-      for i in range(height):
-        new_line = []
-        for j in range(width):
-          new_line.append(0)
-        field.append(new_line)
-        Figure(3,0)
+    def Tetris_Game(self):
+      self.tetris = Tetris()
+      self.create_widgets()
+      self.update_clock()
+    def update_clock(self):
+      if not self.tetris.game_over:
+        self.tetris.move(1,0)
+        self.update()
+        self.after(int(1000*(0.9**self.score)),self.update_clock)
+    def create_widgets(self):
+      PIECE_SIZE = 33
+      self.canvas = tk.Canvas(self,height=PIECE_SIZE * self.tetris.FIELD_HEIGHT
+                                  ,width=PIECE_SIZE * self.tetris.FIELD_WIDTH
+                                  ,bg='black')
+      self.canvas.focus_set()
+
+      ## ARROW KEYS
+      self.canvas.bind("<Left>",lambda _:(self.tetris.move(0,-1),self.update()))
+      self.canvas.bind("<Right>",lambda _:(self.tetris.move(0,1),self.update()))
+      self.canvas.bind("<Down>",lambda _:(self.tetris.move(1,0),self.update()))
+      self.canvas.bind("<Up>",lambda _:(self.tetris.rotate(),self.update()))
+
+      ## WASD KEYS
+      self.canvas.bind("a",lambda _:(self.tetris.move(0,-1),self.update()))
+      self.canvas.bind("d",lambda _:(self.tetris.move(0,1),self.update()))
+      self.canvas.bind("s",lambda _:(self.tetris.move(1,0),self.update()))
+      self.canvas.bind("w",lambda _:(self.tetris.rotate(),self.update()))
+
+      self.rectangles = [
+      self.canvas.create_rectangle(c*PIECE_SIZE,r*PIECE_SIZE
+                                  ,(c+1)*PIECE_SIZE,(r+1)*PIECE_SIZE,outline='white')
+          for r in range(self.tetris.FIELD_HEIGHT) for c in range(self.tetris.FIELD_WIDTH)
+      ]
+      self.canvas.place(anchor="center",relx=0.25,rely=0.5)
+      self.update()
+
+    def update(self):
+      if not self.tetris.game_over:
+        for i, _id in enumerate(self.rectangles):
+          colour_num = self.tetris.get_colour(i // self.tetris.FIELD_WIDTH,i % self.tetris.FIELD_WIDTH)
+          self.canvas.itemconfig(_id,fill=COLOURS[colour_num])
+      else:
+        if not self.GameOverRun:
+          self.after_cancel(self.tick)
+          self.countdownLabel.configure(text='GAME OVER')
+          self.countdownTimer['value'] = self.tempquestiontimer
+          self.GameOverRun = True
+          self.flashingBar()
+      self.score_label['text'] = "Score: {}".format(self.score)
+     
         
-# Tetris Block Codes
-class Figure:
-  ## Tutorial from https://levelup.gitconnected.com/writing-tetris-in-python-2a16bddb5318
-  ## Only the first bit, the second half of the guide does not help me as I am not using pygame
+class Tetris():
+  FIELD_WIDTH = 10
+  FIELD_HEIGHT = 20
+  TETROMINOS = [
+    [(0,0),(0,1),(1,0),(1,1)], # 0
+    [(0,0),(0,1),(1,1),(2,1)], # L
+    [(0,1),(1,1),(2,1),(2,0)], # J
+    [(0,1),(1,0),(1,1),(2,0)], # Z
+    [(0,1),(1,0),(1,1),(2,1)], # T
+    [(0,0),(1,0),(1,1),(2,1)], # S
+    [(0,1),(1,1),(2,1),(3,1)], # I
 
-  # RGB colours defined here
-  colours = [
-  (0, 0, 0),
-  (120, 37, 179),
-  (100, 179, 179),
-  (80, 34, 22),
-  (80, 134, 22),
-  (180, 34, 22),
-  (180, 34, 122),
   ]
-  # 0  1  2  3
-  # 4  5  6  7
-  # 8  9  10 11
-  # 12 13 14 15
-  figures = [
-      [[1, 5, 9, 13], [4, 5, 6, 7]], # line block (2 rotation)
-      [[1, 2, 5, 9], [0, 4, 5, 6], [1, 5, 9, 8], [4, 5, 6, 10]], # J block (4 rotations)
-      [[1, 2, 6, 10], [5, 6, 7, 9], [2, 6, 10, 11], [3, 5, 6, 7]], # L block (4 rotations)
-      [[1, 4, 5, 6], [1, 4, 5, 9], [4, 5, 6, 9], [1, 5, 6, 9]], # T block (4 rotations)
-      [[1, 2, 5, 6]], # Square O block (1 rotation)
-      [[8,9,5,6],[1,5,6,10],[8,9,5,6],[0,4,5,9]], # S block (4 rotations)
-      [[4,5,9,10],[2,6,5,9],[4,5,9,10],[8,4,5,1]] # Z block (4 rotations)
-  ]
+  def __init__(self):
+    self.field = [[0 for c in range(Tetris.FIELD_WIDTH)] for r in range(Tetris.FIELD_HEIGHT)]
+    self.move_lock = Lock()
+    self.reset_tetromino()
+    self.game_over = False
+  def reset_tetromino(self):
+    self.tetromino = random.choice(Tetris.TETROMINOS)[:]
+    self.tetromino_colour = random.randint(1,len(COLOURS)-1)
+    self.tetromino_offset = [-2,Tetris.FIELD_WIDTH//2]
+    self.game_over = any(not self.is_cell_free(r,c) for (r,c) in self.get_tetromino_coords())
+  
+  def get_tetromino_coords(self):
+    return [(r + self.tetromino_offset[0], c + self.tetromino_offset[1]) for r,c in self.tetromino]
 
-  def __init__(self,x,y):
-    self.x = x
-    self.y = y
-    self.type = random.randint(0,len(self.figures) - 1)
-    self.colour = random.randint(1,len(self.colours)-1)
-    self.rotation = 0
-  def image(self):
-    return self.figures[self.type][self.rotation]
-  def rotate(self):
-    self.rotation = (self.rotation + 1) % len(self.figures[self.types])
+  def apply_tetromino(self):
+    for (r,c) in self.get_tetromino_coords():
+      self.field[r][c] = self.tetromino_colour
+    new_field = [row for row in self.field if any(tile == 0 for tile in row)]
+    lines_eliminated = len(self.field) - len(new_field)
+    self.field = [[0]*Tetris.FIELD_WIDTH for x in range(lines_eliminated)] + new_field
+    self.reset_tetromino()
     
+  def get_colour(self,r,c):
+    return self.tetromino_colour if (r,c) in self.get_tetromino_coords() else self.field[r][c]
+  
+  def is_cell_free(self,r,c):
+    return r < Tetris.FIELD_HEIGHT and 0 <= c < Tetris.FIELD_WIDTH and (r< 0 or self.field[r][c] == 0)
+
+  def move(self,dr,dc):
+    with self.move_lock:
+      if self.game_over:
+        return 
+      if all(self.is_cell_free(r + dr,c + dc) for r,c in self.get_tetromino_coords()):
+        self.tetromino_offset = [self.tetromino_offset[0] + dr, self.tetromino_offset[1] + dc]
+      elif dr == 1 and dc == 0:
+        self.game_over = any(r < 0 for (r,c) in self.get_tetromino_coords())
+        if not self.game_over:
+          self.apply_tetromino()
+
+  def rotate(self):
+    with self.move_lock:
+      if self.game_over:
+        return
+      ys = [r for (r,c) in self.tetromino]
+      xs = [c for (r,c) in self.tetromino]
+      size = max(max(ys) - min(ys),max(xs)-min(xs))
+      rotated_tetromino = [(c,size - r) for (r,c) in self.tetromino]
+      wallkick_offset = self.tetromino_offset[:]
+      tetromino_coord = [(r+self.tetromino_offset[0],c+self.tetromino_offset[1]) for r,c in rotated_tetromino]
+      min_x = min(c for r,c in tetromino_coord)
+      max_x = max(c for r,c in tetromino_coord)
+      max_y = max(r for r,c in tetromino_coord)
+      wallkick_offset[1] -= min(0,min_x)
+      wallkick_offset[1] += min(0,Tetris.FIELD_WIDTH - (1+max_x))
+      wallkick_offset[0] += min(0,Tetris.FIELD_HEIGHT - (1+max_y))
+      tetromino_coord = [(r+wallkick_offset[0],c+wallkick_offset[1]) for r,c in rotated_tetromino]
+      if all(self.is_cell_free(r,c) for r,c in tetromino_coord):
+        self.tetromino, self.tetromino_offset= rotated_tetromino, wallkick_offset
+
+        
+
 # Option Menu
 class Options(tk.Frame):
     def __init__(self, master):
