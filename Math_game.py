@@ -231,7 +231,7 @@ class Game(tk.Frame):
         self.Buttons[i]["state"] = "disabled"
       self.after_cancel(self.tick)
       self.after(1000,self.flashingBar)
-      
+
 
 
     def htmlcolor(self,r, g, b):
@@ -303,7 +303,8 @@ class Game(tk.Frame):
           self.countdownLabel.configure(text='GAME OVER')
           self.countdownTimer['value'] = self.tempquestiontimer
           self.GameOverRun = True
-          self.flashingBar()
+          if self.remaining > 0:
+            self.flashingBar()
       self.score_label['text'] = "Score: {}".format(self.score)
      
         
