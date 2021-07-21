@@ -192,7 +192,6 @@ class Game(tk.Frame):
                 question = self.bedmas()
           elif Options.currentTopic == "Fractions":
                 question = self.fraction()
-          
           # Prevents the algorithm from generating absurd questions
           try:
             randomQuestion = question[0]
@@ -202,23 +201,23 @@ class Game(tk.Frame):
             randomQuestion = question[0] 
             randomAnswer = question[1]
             wronganswers = question[2]
-          
-          # Displays the answer
-          self.Display.config(text=randomQuestion) # Display it on the window
-          self.countdown(self.tempquestiontimer)
+            
+            # Displays the answer
+            self.Display.config(text=randomQuestion) # Display it on the window
+            self.countdown(self.tempquestiontimer)
 
-          # Answer Buttons
+            # Answer Buttons
 
-           
-          self.Buttons[0].config(text=randomAnswer,command=lambda:self.CorrectAns()) 
-          # Colours of the Buttons assign it in a random order
-          ButtonInfo = random.sample([[1,1,'#93c47d'],[1,2,'#e06666'],[2,1,'#6fa8dc'],[2,2,'#f1c232']],4) 
-          for i in range(0,4):
-            if i > 0:
-              self.Buttons[i].config(text=wronganswers[i-1],command=lambda:self.WrongAns())
-            self.Buttons[i].config(bg=ButtonInfo[i][2],font=ANSFONT)
-            self.Buttons[i].place(relx=0.525+(0.15*int(ButtonInfo[i][0])),rely=0.35+0.15*int(ButtonInfo[i][1]),
-            anchor='center',relheight=BUTTONHEIGHT,relwidth=BUTTONWIDTH)
+            
+            self.Buttons[0].config(text=randomAnswer,command=lambda:self.CorrectAns()) 
+            # Colours of the Buttons assign it in a random order
+            ButtonInfo = random.sample([[1,1,'#93c47d'],[1,2,'#e06666'],[2,1,'#6fa8dc'],[2,2,'#f1c232']],4) 
+            for i in range(0,4):
+              if i > 0:
+                self.Buttons[i].config(text=wronganswers[i-1],command=lambda:self.WrongAns())
+              self.Buttons[i].config(bg=ButtonInfo[i][2],font=ANSFONT)
+              self.Buttons[i].place(relx=0.525+(0.15*int(ButtonInfo[i][0])),rely=0.35+0.15*int(ButtonInfo[i][1]),
+              anchor='center',relheight=BUTTONHEIGHT,relwidth=BUTTONWIDTH)
     
           
     # When player has pressed the correct answer
@@ -543,8 +542,6 @@ class Game(tk.Frame):
         # randomly assign __ into either __*x or (__?__) or both
         # do this until there are no more __
         while question.count('__') > 0:
-            if random.random() > difficulty_multiplier[1]+(0.1*runs):
-                question = question.replace('__','__*x',1)
             if random.random() > difficulty_multiplier[1]+(0.25*runs):
                 question = question.replace('__','(__?__)',1)
             elif random.random()>difficulty_multiplier[1]+(0.2*runs):
@@ -552,7 +549,6 @@ class Game(tk.Frame):
             # if more than 1 x, to simiplify question, chance to remove them.
             if question.count('x')>1:
                 if question.count(')*x')>0:
-                    if random.random()>0.3+(0.1*runs):
                         question = question.replace(")*x",')',1)
         
             multiplier = 1
