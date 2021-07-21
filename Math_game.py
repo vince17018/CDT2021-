@@ -13,7 +13,14 @@ from fractions import Fraction
 TITLEFONT = ('Segoe Print',32,'bold'); ANSFONT = ('Segoe Print',24,'bold'); FONT  = ('Segoe Print',16); 
 BUTTONWIDTH = 0.15;BUTTONHEIGHT = 0.15;DROPHEIGHT = 1;DROPWIDTH = 20
 DROPCOLOUR = 'gray'
-COLOURS = ['gray', 'lightgreen','pink','blue','orange','purple']
+COLOURSDEFUALT = ['gray', 'lightgreen','pink','blue','orange','purple']
+COLOURS1 = ['gray', '#ED6A5A','#F4F1BB','#9BC1BC','#5CA4A9','#E6EBE0']
+COLOURS2 = ['gray', '#EF3E36','#17BEBB','#2E282A','#EDB88B','#FAD8D6']
+COLOURS3 = ['gray', '#BFAE48','#5FAD41','#2D936C','#391463','#3A0842']
+COLOURS4 = ['gray', '#EDD3C4','#C8ADC0','#7765E3','#3B60E4','#080708']
+COLOURS5 = ['gray', '#124E78','#F0F0C9','#F2BB05','#D74E09','#6E0E0A']
+
+TETRISCOLOURS = [COLOURSDEFUALT,COLOURS1,COLOURS2,COLOURS3,COLOURS4,COLOURS5]
 # Function for reading out of the csv file whichever name you give
 # Input: The file name, example: readcsv(TestQuestions.csv)
 # Output: a list of all of the items inside the csv
@@ -149,10 +156,12 @@ class Game(tk.Frame):
           '*': lambda a, b: a * b, 
     }
     operators = ["+","-","*",'/']
-
+    colours = []
     # Setup widgets on the page
     def __init__(self, master):
       tk.Frame.__init__(self, master)
+      Game.colours = random.choice(TETRISCOLOURS)
+      print(Game.colours)
       self.master = master
       self.GameOverRun = False
 
@@ -372,10 +381,11 @@ class Game(tk.Frame):
 
     def update(self):
       if not self.tetris.game_over:
-        # colours the block a random colour
+        # gets colour of the entire field
         for i, _id in enumerate(self.rectangles):
           colour_num = self.tetris.get_colour(i // self.tetris.FIELD_WIDTH,i % self.tetris.FIELD_WIDTH)
-          self.canvas.itemconfig(_id,fill=COLOURS[colour_num])
+          self.canvas.itemconfig(_id,fill=Game.colours[colour_num])
+          
       else:
         # if Game is over
         if not self.GameOverRun:
@@ -618,7 +628,8 @@ class Tetris():
   # generate a random tetromino with a random colour
   def reset_tetromino(self):
     self.tetromino = random.choice(Tetris.TETROMINOS)[:]
-    self.tetromino_colour = random.randint(1,len(COLOURS)-1)
+    self.tetromino_colour = random.randint(1,len(Game.colours)-1)
+    print(Game.colours[self.tetromino_colour])
     self.tetromino_offset = [-2,Tetris.FIELD_WIDTH//2]
     self.game_over = any(not self.is_cell_free(r,c) for (r,c) in self.get_tetromino_coords())
   # Get the coordinate of the tetromino
@@ -805,7 +816,11 @@ class GameOverScreen(tk.Frame):
   "That was easy","Nice try","Oof that was close!",
   "Go again?","C'mon you can do better",
   "Lets have another go","Lets do it again",
-  "ONE MORE!!","Wonderful!","So Close..."]    
+  "ONE MORE!!","Wonderful!","So Close...",
+  "Sovan's apple sticker stash","All original code here",
+  "Wow Tetris is so fun!", "Get a life! Your score is too \n low for life support - Sovan Chap",
+  "INSANE","Thats not possible","Godly","Are you sure you aren't cheating?",
+  "Hah, my grandma could do better","Better luck next time","Lets have another go"]    
   def __init__(self, master):
     tk.Frame.__init__(self, master)
     # Tketris Title Label
@@ -829,6 +844,7 @@ class GameOverScreen(tk.Frame):
         text = 'New Highscore!!'
       else:
         text = random.choice(self.gameOverText)
+
     else:
       text = 'New Highscore!!'
       
