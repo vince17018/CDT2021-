@@ -757,7 +757,7 @@ class Leaderboard(tk.Frame):
     , image=back,borderwidth=0)
     back_button.place(relx = (5/6),rely=0.9,anchor='center')
     back_button.img = back
-    topic = tk.StringVar(self,value=Options.topics[0])
+    topic = tk.StringVar(self,value="Select Topic")
     # Topic dropbox
     topics = tk.OptionMenu(self,topic,*Options.topics,command=lambda x:self.UpdateLeaderboard(x))
     topics.config(font=ANSFONT ,width=DROPWIDTH-5,height=DROPHEIGHT,bg=DROPCOLOUR,activebackground=DROPCOLOUR)
@@ -818,7 +818,7 @@ class GameOverScreen(tk.Frame):
   "Lets have another go","Lets do it again",
   "ONE MORE!!","Wonderful!","So Close...",
   "Sovan's apple sticker stash","All original code here",
-  "Wow Tetris is so fun!", "Get a life! Your score is too \n low for life support - Sovan Chap",
+  "Wow the puzzle game is so fun!", "Get a life! Your score is too \n low for life support - Sovan Chap",
   "INSANE","Thats not possible","Godly","Are you sure you aren't cheating?",
   "Hah, my grandma could do better","Better luck next time","Lets have another go"]    
   def __init__(self, master):
@@ -930,7 +930,7 @@ class Instructions1(tk.Frame):
     Objective.place(relx=0.5,rely=0.35,anchor='center')
     Objectivetext = tk.Label(self,text='The objective of the game is to get the highest score you can!\n'+
                         'You can get a point for getting a math question correct\n\n'+
-                        'However there is a catch, you would have to play tetris at the same time\n'+
+                        'However there is a catch, you would have to play a puzzle game at the same time\n'+
                         'The goal is to get the highest score you can and get on the leaderboard',font=FONT)
     Objectivetext.place(relx=0.5,rely=0.6,anchor='center')
 # Controls Instructions Frame
@@ -960,7 +960,7 @@ class Instructions2(tk.Frame):
     Control.place(relx=0.5,rely=0.35,anchor='center')
     Controltext = tk.Label(self,text='This game requires you to multitask\n'+
                         'You answer the math problem with your mouse by selecting the correct answer\n'+
-                          'and you use "wasd" or the arrow keys to control the tetris block\n\n'+
+                          'and you use "wasd" or the arrow keys to control the puzzle block\n\n'+
                           'up to rotate the block\n'+
                         'down to drop faster and\n'+
                         'left and right to move the block',font=FONT)
@@ -994,7 +994,7 @@ class Instructions3(tk.Frame):
                         "when you get the question wrong, you would be stunned and you wouldn't be \n"+
                         'able to do anything for a long while.\n\n'+
                         "Be wary of the timer, make sure it doesn't reach 0 or you would lose\n"+
-                        'You would also lose if the tetris block reaches the top of the playing field',font=FONT)
+                        'You would also lose if the puzzle block reaches the top of the playing field',font=FONT)
     Penaltytext.place(relx=0.5,rely=0.6,anchor='center')
 # Changing Topic Instructions Frame
 class Instructions4(tk.Frame):
@@ -1029,7 +1029,7 @@ class Instructions4(tk.Frame):
 def main():
   app = Tketris()
   app.geometry('1280x720')
-  app.resizable(False,False)
+  app.resizable(False,False) # Cannot resize window (otherwise it will ruin formatting)
   app.protocol("WM_DELETE_WINDOW", close_program)
   app.mainloop()
   
